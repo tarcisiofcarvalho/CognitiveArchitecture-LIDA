@@ -113,14 +113,14 @@ public class Location{
         return false;
     }
     
-    public boolean isOnList(Collection<Location> list) {
-        for(Location item : list) {
-            if(item != null && item.getX()==this.getX() && item.getY()==this.getY()) {
-                return true;
-            }
-        }
-        return false;
-    } 
+//    public boolean isOnList(Collection<Location> list) {
+//        for(Location item : list) {
+//            if(item != null && item.getX()==this.getX() && item.getY()==this.getY()) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    } 
     
     public Location loadFromList(List<Location> list) {
         for(Location item : list) {

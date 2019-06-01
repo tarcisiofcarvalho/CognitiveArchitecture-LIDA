@@ -1,49 +1,41 @@
 package modules;
 
 import edu.memphis.ccrg.lida.sensorymemory.SensoryMemoryImpl;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import ws3dproxy.model.Thing;
 
 public class SensoryMemory extends SensoryMemoryImpl {
 
     private Map<String, Object> sensorParam;
-//    private Thing food;
-//    private Thing jewel;
-//    private List<Thing> thingAhead;
-//    private Thing leafletJewel;
+    private Boolean thingAhead;
     private Boolean nextStep;
+    private Boolean goalCompleted;
 
     public SensoryMemory() {
         this.sensorParam = new HashMap<>();
-//        this.food = null;
-//        this.jewel = null;
-//        this.thingAhead = new ArrayList<>();
-//        this.leafletJewel = null;
+        this.thingAhead = false;
         this.nextStep = false;
+        this.goalCompleted = false;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void runSensors() {
+
+        // -- Goal completed sensor setup -- //
         sensorParam.clear();
-//        sensorParam.put("mode", "food");
-//        food = (Thing) environment.getState(sensorParam);
-//        sensorParam.clear();
-//        sensorParam.put("mode", "jewel");
-//        jewel = (Thing) environment.getState(sensorParam);
-//        sensorParam.clear();
-//        sensorParam.put("mode", "thingAhead");
-//        thingAhead = (List<Thing>) environment.getState(sensorParam);
-//        sensorParam.clear();
-//        sensorParam.put("mode", "leafletJewel");
-//        leafletJewel = (Thing) environment.getState(sensorParam);  
-//        sensorParam.clear();
+    	sensorParam.put("mode", "goalCompleted");
+        goalCompleted = (Boolean) environment.getState(sensorParam);
+        
+        // -- Brick Ahead sensor setup -- //
+        sensorParam.clear();
+    	sensorParam.put("mode", "thingAhead");
+        thingAhead = (Boolean) environment.getState(sensorParam);
+
+        // -- Next step sensor setup -- //
+        sensorParam.clear();
         sensorParam.put("mode", "nextStep");
         nextStep = (Boolean) environment.getState(sensorParam);  
-        //System.out.println("");
+        
     }
 
     @Override
@@ -51,19 +43,16 @@ public class SensoryMemory extends SensoryMemoryImpl {
         Object requestedObject = null;
         String mode = (String) params.get("mode");
         switch (mode) {
-//            case "food":
-//                requestedObject = food;
-//                break;
-//            case "jewel":
-//                requestedObject = jewel;
-//                break;
-//            case "thingAhead":
-//                requestedObject = thingAhead;
-//                break;
-//            case "leafletJewel":
-//                requestedObject = leafletJewel;
-//                break;
-            case "nextStep":
+
+        	case "goalCompleted":
+                requestedObject = goalCompleted;
+                break;
+        	
+        	case "thingAhead":
+        		requestedObject = thingAhead;
+        		break;
+            
+        	case "nextStep":
                 requestedObject = nextStep;
                 break;                
             default:

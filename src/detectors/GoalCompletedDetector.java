@@ -5,7 +5,7 @@ import java.util.Map;
 
 import edu.memphis.ccrg.lida.pam.tasks.BasicDetectionAlgorithm;
 
-public class ThingAheadDetector extends BasicDetectionAlgorithm {
+public class GoalCompletedDetector extends BasicDetectionAlgorithm {
 
     private final String modality = "";
     private Map<String, Object> detectorParams = new HashMap<>();
@@ -13,18 +13,16 @@ public class ThingAheadDetector extends BasicDetectionAlgorithm {
     @Override
     public void init() {
         super.init();
-        detectorParams.put("mode", "thingAhead");
+        detectorParams.put("mode", "goalCompleted");
     }
 
     @Override
     public double detect() {
-        Boolean thingAhead = (Boolean) sensoryMemory.getSensoryContent(modality, detectorParams);
+        Boolean goalCompleted = (Boolean) sensoryMemory.getSensoryContent(modality, detectorParams);
         double activation = 0.0;
-        if (thingAhead != null) {
-            if(thingAhead)
+        if (goalCompleted != null) {
+            if(goalCompleted)
                 activation = 1.0;
-            // DEBUG:
-            //System.out.println("thingAhead activated.....");
         }
         return activation;
     }

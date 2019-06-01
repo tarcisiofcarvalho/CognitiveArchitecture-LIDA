@@ -40,13 +40,14 @@ public class GridMap {
     
     public double Cost(Location a, Location b)
     {
-        return b.isOnList(walls) ? 5 : 1;
+    	return b.isOnList(walls) ? 5 : 1;
         //return Math.sqrt( Math.pow((b.getX()-a.getX()),2) + Math.pow((b.getY()-a.getY()),2) );
         
     }
     
     public boolean hasWall(Location location){
-        return !location.isOnList(walls);        
+    		return !location.isOnList(walls);
+                
     }    
     
     public List<Location> neighbors(Location location){
@@ -75,4 +76,20 @@ public class GridMap {
         }
         return null;
     }
+    
+    /**
+     * Method to get thing grid position    
+     * @param x
+     * @param y
+     * @return cell id
+    */
+    public Location getGridThingPosition(double x, double y, List<Location> cells){
+        for (Location cell : cells) {
+            if( (x <= cell.getxRange() && x>= (cell.getxRange()-50))
+               && (y <= cell.getyRange() && y>= (cell.getyRange()-50))){
+                return cell;
+            }
+        }
+        return null;
+    }    
 }
