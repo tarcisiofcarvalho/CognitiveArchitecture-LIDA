@@ -32,13 +32,15 @@ public class Environment extends EnvironmentImpl {
     private GridMap grid;
     List<Location> path;
     List<Location> locList;
+    List<Thing> brickList;
+    boolean processingPath;
     
     public Environment() {
         this.ticksPerRun = DEFAULT_TICKS_PER_RUN;
         this.proxy = new WS3DProxy();
         this.creature = null;
         this.nextStep=true;
-        this.currentAction = "gotoNextStep";
+        this.currentAction = "nextStep";
         
         // Temporary action
         nextCellX = 100.0;
@@ -48,7 +50,7 @@ public class Environment extends EnvironmentImpl {
     @Override
     public void init() {
         super.init();
-        ticksPerRun = (Integer) getParam("environment.ticksPerRun", DEFAULT_TICKS_PER_RUN);
+        ticksPerRun = (Integer) getParam("environment.ticksPerRun", 1);
         taskSpawner.addTask(new BackgroundTask(ticksPerRun));
         
         try {
@@ -62,19 +64,22 @@ public class Environment extends EnvironmentImpl {
             CommandUtility.sendNewWaypoint(700.00, 300.00);
               
             // --- Defining Bricks - Case 1--- //
-//            System.out.println(CommandUtility.sendNewBrick(0, 400, 50, 450, 250));
-//            System.out.println(CommandUtility.sendNewBrick(0, 600, 200, 650, 600));
-//            System.out.println(CommandUtility.sendNewBrick(0, 400, 400, 450, 600));
+//            CommandUtility.sendNewBrick(0, 200, 50, 250, 250);
+//            CommandUtility.sendNewBrick(0, 400, 150, 450, 400);
+//            CommandUtility.sendNewBrick(0, 500, 400, 700, 450);
 
             // --- Defining Bricks - Case 2--- //
-//            System.out.println(CommandUtility.sendNewBrick(0, 200, 50, 250, 250));
-//            System.out.println(CommandUtility.sendNewBrick(0, 600, 200, 650, 600));
-//            System.out.println(CommandUtility.sendNewBrick(0, 400, 150, 450, 600));
+//            CommandUtility.sendNewBrick(0, 200, 50, 250, 250);
+//            CommandUtility.sendNewBrick(0, 400, 150, 450, 400);
+//            CommandUtility.sendNewBrick(0, 600, 200, 650, 350);
+
             
             // --- Defining Bricks - Case 3--- //
-            System.out.println(CommandUtility.sendNewBrick(0, 200, 50, 250, 250));
-            System.out.println(CommandUtility.sendNewBrick(0, 600, 200, 650, 600));
-            System.out.println(CommandUtility.sendNewBrick(0, 400, 50, 450, 400));            
+            CommandUtility.sendNewBrick(0, 200, 50, 250, 250);
+            CommandUtility.sendNewBrick(0, 400, 50, 450, 200);             
+            CommandUtility.sendNewBrick(0, 600, 200, 650, 350);
+ 
+            
             // -- Generating the grid map location -- //
             locList = new ArrayList<>();
             for(int x=1;x<=16;x++){ // x loop
@@ -84,7 +89,7 @@ public class Environment extends EnvironmentImpl {
             }
             
             // -- Generate the creature path to the target -- //
-            this.createCreaturePath();
+            this.createCreaturePath(creature.getPosition().getX(),creature.getPosition().getY());
             
             System.out.println("Path planning created...");
 
@@ -97,7 +102,7 @@ public class Environment extends EnvironmentImpl {
         }
     }
     
-    private void createCreaturePath() {
+    private void createCreaturePath(double x, double y) {
     	
         // --- Creating the Grid map cells --- //
         grid = new GridMap(16, 16, locList, this.getWalls(locList));
@@ -107,15 +112,15 @@ public class Environment extends EnvironmentImpl {
         astar = new AStarSupport();
         Location target = grid.getGridCreaturePosition(700, 300);
         path = astar.AStarSearch(grid, 
-                          grid.getGridCreaturePosition(creature.getPosition().getX(), creature.getPosition().getY()), 
-                          target);
-        System.out.println("Creature path created.....");
-        
+                          grid.getGridCreaturePosition(x,y), 
+                         target);       
     }
 
     private List<Location> getWalls(List<Location> cells){
     	
 		List<Location> walls = new ArrayList<Location>();
+		
+		brickList = new ArrayList<Thing>();
 		
 		try {
 	        StringTokenizer stW = CommandUtility.sendGetWorldEntities();
@@ -128,11 +133,11 @@ public class Environment extends EnvironmentImpl {
 	        	// -- Check if the next token is related to Brick thing -- /
 	        	if(temp_token.length()>6) {
 	        		if(temp_token.substring(0, 6).equals("Brick_")) {
-	        			
+
 	        			// -- skip first two tokens that are not related to X and Y position -- //
-	    	        	stW.nextToken();	
-	    	        	stW.nextToken();
-	        			
+	        			stW.nextToken();	
+	        			stW.nextToken();
+
 	        			// -- Identify brick edges and parse it to grid cells--- //
 	    	        	double x_A = Double.parseDouble(stW.nextToken());
 	    	        	double x_B = Double.parseDouble(stW.nextToken());
@@ -141,6 +146,9 @@ public class Environment extends EnvironmentImpl {
 	    	        	
 	        			Location edgeA = this.getGridThingPosition(x_A, y_A, cells);
 	        			Location edgeB = this.getGridThingPosition(x_B, y_B, cells);
+
+	        			//Adding on Brick List Control
+	        			brickList.add(new Thing("Brick",1,x_A,y_A,x_B,y_B,0.0,0.0,"Red",0.0,0.0));
 	        			
 	        			// -- Identify the number of x and y positions the brick covers -- //
 	        			int xStart = 0;
@@ -168,6 +176,7 @@ public class Environment extends EnvironmentImpl {
 	        			for(int x=xStart;x<=xEnd;x++) {
 	        				for(int y=yStart;y<=yEnd;y++) {
 	        					walls.add(new Location(x, y, x*50, y*50));
+	        					System.out.println("Occupied: " + x + " x " + y);
 	        				}
 	        			}
 	        		}
@@ -276,42 +285,71 @@ public class Environment extends EnvironmentImpl {
         return requestedObject;
     }
 
+    public boolean brickControlCheck(Thing b) {
+    	
+    	for(Thing t : brickList) {
+        	
+    		if(t.getX1()==b.getX1() && t.getY2()==b.getY2())
+    			return true;
+    	}
+    	
+    	System.out.println("Brick does not match.....");
+    	System.out.println("x1: " + b.getX1());
+    	System.out.println("y1: " + b.getY1());
+    	
+    	System.out.println("x2: " + b.getX2());
+    	System.out.println("y2: " + b.getY2());
+    	
+    	System.out.println("xxxxxxxxx");
+    	return false;
+    }
+    
     public void updateEnvironment() {
         creature.updateState();
-        nextStep = false;
+        nextStep = true;
         thingAhead = false;
         goalCompleted = false;
+        
         
         double distance = this.calculateDistancedouble(creature.getPosition().getX(), creature.getPosition().getY(), 700.0, 300.0);
 
         if(distance<=20) {
         	
         	goalCompleted = true;
+            thingAhead = false;
+            nextStep = false;
+        	System.out.println("Goal completed in Updated Environment....");
         	
         }else {
         	
 	        for (Thing thing : creature.getThingsInVision()) {
 	            
-	            if(thing.getCategory()==Constants.categoryBRICK && creature.calculateDistanceTo(thing)<=30){
-	                
-	                thingAhead = true;
-	                this.createCreaturePath();
-	                
-	            }else{
+	            if(thing.getCategory()==Constants.categoryBRICK && !this.brickControlCheck(thing)){
 	            	
-	                nextStep = true;
+	                thingAhead = true;
+	                nextStep = false;
+
+	                this.createCreaturePath(nextCellX,nextCellY);
+	                System.out.println("New start: " + nextCellX +  " x " + nextCellY);
+            		System.out.println("Calc path...");
+            		this.processingPath = true;
+                		
 	                
 	            }
 	           
 	        }
 
         }
+        
+        System.out.println("update env processed. ");
     }
         
     @Override
     public void processAction(Object action) {
         String actionName = (String) action;
         currentAction = actionName.substring(actionName.indexOf(".") + 1);
+    	System.out.println("Process action > " + currentAction);
+
     }
 
     private void performAction(String currentAction) {
@@ -334,15 +372,14 @@ public class Environment extends EnvironmentImpl {
 	                break;
                 
             	case "thingAhead":
-
-            		// -- Move Back to avoid collision -- //
-                	//creature.move(-7.0, 0.0, 0.0);
+            		
                 	creature.rotate(5.0);
-            		System.out.println("Re-calculating new path...");
+
+            		System.out.println("Perform action > Re-calculating new path...");
                     break;     
 
             	case "nextStep":
-            		
+
             		// -- Move next step -- //
             		Location loc = getNextStep(creature.getPosition().getX(), creature.getPosition().getY());
 
@@ -352,9 +389,11 @@ public class Environment extends EnvironmentImpl {
             		}else {
             			System.out.println("Loc null");
             		}
-                    creature.moveto(1.0, nextCellX, nextCellY);
+            		CommandUtility.sendGoTo("0", 1.0, 1.0, nextCellX, nextCellY);
 
-                    System.out.println("Go to next step: " + nextCellX + " x " + nextCellY);
+                    System.out.println("Perform action > next step: " + nextCellX + " x " + nextCellY);
+
+                    
                 default:
                     break;
             }
@@ -363,16 +402,5 @@ public class Environment extends EnvironmentImpl {
         }
     }
 
-//  public void finishState() {
-//  currentAction = "completed";
-//  System.out.println("The missing was accomplished.");
-//  try 
-//  {
-//     Thread.sleep(4000); //ck
-//  } catch (Exception e){
-//     e.printStackTrace();
-//  }
-//  System.exit(1);
-//}
 
 }

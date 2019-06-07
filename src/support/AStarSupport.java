@@ -84,7 +84,7 @@ public class AStarSupport {
         }
 
 	    int iPath = -1;
-	    System.out.println(">>>> Print list >>>>");
+//	    System.out.println(">>>> Print list >>>>");
 	    for(int i=0;i<this.listTo.size();i++) {
 	    	if(this.listTo.get(i).Equals(goal))
 	    		iPath = i;
