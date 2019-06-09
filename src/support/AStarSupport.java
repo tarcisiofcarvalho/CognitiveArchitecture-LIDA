@@ -88,10 +88,10 @@ public class AStarSupport {
 	    for(int i=0;i<this.listTo.size();i++) {
 	    	if(this.listTo.get(i).Equals(goal))
 	    		iPath = i;
-//	        	System.out.println("To: " + this.listTo.get(i).getX() + "," + this.listTo.get(i).getY() +
-//	                           " From: " + this.listFrom.get(i).getX() + "," + this.listFrom.get(i).getY() +
-//	                           " G: " + this.listG.get(i) + 
-//	                           " F: " + this.listF.get(i));
+	        	System.out.println("To: " + this.listTo.get(i).getX() + "," + this.listTo.get(i).getY() +
+	                           " From: " + this.listFrom.get(i).getX() + "," + this.listFrom.get(i).getY() +
+	                           " G: " + this.listG.get(i) + 
+	                           " F: " + this.listF.get(i));
 	
 	    }
         // Prepare path

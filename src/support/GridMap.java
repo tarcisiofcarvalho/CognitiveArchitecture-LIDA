@@ -67,7 +67,7 @@ public class GridMap {
      * @param y
      * @return cell id
     */
-    public Location getGridCreaturePosition(double x, double y){
+    public Location getGridCreaturePosition(double x, double y, List<Location> cells){
         for (Location cell : cells) {
             if( (x <= cell.getxRange() && x>= (cell.getxRange()-50))
                && (y <= cell.getyRange() && y>= (cell.getyRange()-50))){

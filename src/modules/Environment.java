@@ -50,7 +50,7 @@ public class Environment extends EnvironmentImpl {
     @Override
     public void init() {
         super.init();
-        ticksPerRun = (Integer) getParam("environment.ticksPerRun", 1);
+        ticksPerRun = (Integer) getParam("environment.ticksPerRun", DEFAULT_TICKS_PER_RUN);
         taskSpawner.addTask(new BackgroundTask(ticksPerRun));
         
         try {
@@ -63,21 +63,18 @@ public class Environment extends EnvironmentImpl {
             // --- Defining the target objective --- //
             CommandUtility.sendNewWaypoint(700.00, 300.00);
               
-            // --- Defining Bricks - Case 1--- //
+            // --- Defining Bricks - Case A--- //
 //            CommandUtility.sendNewBrick(0, 200, 50, 250, 250);
 //            CommandUtility.sendNewBrick(0, 400, 150, 450, 400);
+
+            // --- Defining Bricks - Case B--- //
+            CommandUtility.sendNewBrick(0, 200, 50, 250, 250);
+            CommandUtility.sendNewBrick(0, 600, 200, 650, 350);
+            
+//            // --- Defining Bricks - Case C--- //
+//            CommandUtility.sendNewBrick(0, 200, 50, 250, 250);            
 //            CommandUtility.sendNewBrick(0, 500, 400, 700, 450);
 
-            // --- Defining Bricks - Case 2--- //
-//            CommandUtility.sendNewBrick(0, 200, 50, 250, 250);
-//            CommandUtility.sendNewBrick(0, 400, 150, 450, 400);
-//            CommandUtility.sendNewBrick(0, 600, 200, 650, 350);
-
-            
-            // --- Defining Bricks - Case 3--- //
-            CommandUtility.sendNewBrick(0, 200, 50, 250, 250);
-            CommandUtility.sendNewBrick(0, 400, 50, 450, 200);             
-            CommandUtility.sendNewBrick(0, 600, 200, 650, 350);
  
             
             // -- Generating the grid map location -- //
@@ -110,10 +107,8 @@ public class Environment extends EnvironmentImpl {
 
         // --- Defining the best Creature path, to avoid bricks and reach the target objective --- //
         astar = new AStarSupport();
-        Location target = grid.getGridCreaturePosition(700, 300);
-        path = astar.AStarSearch(grid, 
-                          grid.getGridCreaturePosition(x,y), 
-                         target);       
+        Location target = getGridThingPosition(700, 300, locList);
+        path = astar.AStarSearch(grid, getGridThingPosition(x,y,locList), target);       
     }
 
     private List<Location> getWalls(List<Location> cells){
@@ -143,7 +138,37 @@ public class Environment extends EnvironmentImpl {
 	    	        	double x_B = Double.parseDouble(stW.nextToken());
 	    	        	double y_A = Double.parseDouble(stW.nextToken());
 	    	        	double y_B = Double.parseDouble(stW.nextToken());
-	    	        	
+
+//	        			if(x_A < x_B && x_A > 50.0) {
+//	        				x_A = x_A - 20;
+//	        			}else if(x_B < x_A && x_B > 50.0) {
+//	        				x_B = x_B - 20;
+//	        			}
+//	        				
+//	        			if(x_A > x_B && x_A < 750.0) {
+//	        				x_A = x_A + 20;
+//	        			}else if(x_B > x_A && x_B < 750.0) {
+//	        				x_B = x_B + 20;
+//	        			}
+//	        			
+//	        			if(y_A < y_B && y_A > 50.0) {
+//	        				y_A = y_A - 20;
+//	        			}else if(y_B < y_A && y_B > 50.0) {
+//	        				y_B = y_B - 20;
+//	        			}
+//	        				
+//	        			if(y_A > y_B && y_A < 750.0) {
+//	        				y_A = y_A + 20;
+//	        			}else if(y_B > y_A && y_B < 750.0) {
+//	        				y_B = y_B + 20;
+//	        			}
+//	        			
+//	        			if(y_A>1)
+//	        				y_A--;
+//	        			
+//	        			if(y_B<16)
+//	        				y_B++;
+
 	        			Location edgeA = this.getGridThingPosition(x_A, y_A, cells);
 	        			Location edgeB = this.getGridThingPosition(x_B, y_B, cells);
 
@@ -171,6 +196,30 @@ public class Environment extends EnvironmentImpl {
 	        				yStart=edgeB.getY();
 	        				yEnd=edgeA.getY();            				
 	        			}            			
+	        			
+//	        			System.out.println("yStart: " + yStart);
+//	        			System.out.println("yEnd: " + yEnd);
+//	        			System.out.println("xStart: " + xStart);
+//	        			System.out.println("xEnd: " + xEnd);
+//	        			
+//	        			if(yStart>1)
+//	        				yStart--;
+//	        			
+//	        			if(yEnd<16)
+//	        				yEnd++;
+//	        			
+//	        			if(xStart>1)
+//	        				xStart--;
+//	        			
+//	        			if(xEnd<16)
+//	        				xEnd++;
+//	        			
+//	        			System.out.println("=======================");
+//	        			System.out.println("yStart: " + yStart);
+//	        			System.out.println("yEnd: " + yEnd);
+//	        			System.out.println("xStart: " + xStart);
+//	        			System.out.println("xEnd: " + xEnd);
+	        			
 	        			
 	        			// -- Generating grid occupied cells based on bricks body -- //
 	        			for(int x=xStart;x<=xEnd;x++) {
@@ -389,7 +438,7 @@ public class Environment extends EnvironmentImpl {
             		}else {
             			System.out.println("Loc null");
             		}
-            		CommandUtility.sendGoTo("0", 1.0, 1.0, nextCellX, nextCellY);
+            		creature.moveto(1.0, nextCellX, nextCellY);
 
                     System.out.println("Perform action > next step: " + nextCellX + " x " + nextCellY);
 
